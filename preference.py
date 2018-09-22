@@ -1,43 +1,30 @@
 import json
 import os.path as op
-import sys
 from operator import getitem
 from functools import reduce
 
+from panda3d.core import Vec3, VBase4
+
 settings_filename = "settings.json"
-if getattr(sys, 'frozen', False):
-    outer_folder = sys._MEIPASS
-else:
-    outer_folder = op.dirname(op.abspath(__file__))
+outer_folder = op.split(__file__)[0]
 filename = op.join(outer_folder, settings_filename)
 with open(filename) as file:
-    D = json.loads(file.read())
+    tree = json.loads(file.read())
 
-def request(_request, sep='.'):
-    """request :== '<name1><sep><name2><sep>...<sep><nameN>'
-    response = D['<name1>']['<name2>']...['<nameN>']"""
-    return reduce(getitem, _request.split(sep), D)
 
-def folder(name, prefix="paths.", postfix="_folder"):
-    return "{}/{}".format(outer_folder, request(prefix + name + postfix))
+def request(s):
+    """s :== '<name1>.<name2>.....<nameN>'
+    response = tree['<name1>']['<name2>']...['<nameN>']"""
+    return reduce(getitem, s.split('.'), tree)
 
-def theme(name=request("core.theme")):
-    return "{}/{}".format(folder("theme"), name)
 
-def clip_filename(n, color_i, set=request("paths.set_folder").format(image_lib=folder("image"), name=request("core.set"))):
-    return request("paths.clip_filename").format(set=set, n=n, color_i=color_i)
+def request_vector(s):
+    return Vec3(*request(s))
 
-def game_icon():
-    return request("game.icon").format(image_lib=folder("image"))
 
-def cell_brush_filename():
-    return request("map_editor.cell_brush").format(image_lib=folder("image"))
+def request_color(s):
+    return VBase4(*request(s))
 
-def none_brush_filename():
-    return request("map_editor.none_brush").format(image_lib=folder("image"))
 
-def save_filename(name=request("paths.autosave_name")):
-    return request("paths.filename").format(lib=folder("save"), name=name, ext=request("formats.save.extension"))
-
-def map_filename(name):
-    return request("paths.filename").format(lib=folder("map"), name=name, ext=request("formats.map.extension"))
+def request_colors(s):
+    return [VBase4(*coors) for coors in request(s)]

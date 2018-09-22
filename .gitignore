@@ -1,8 +1,7 @@
 *.pyc
-*.*~
-*.spec
-*.pkl
+*.py~
+.emacs*
+*.sublime-project
+*.sublime-workspace
+.idea
 __pycache__
-build/**
-colorize.py
-gimp_colorize.py
