@@ -3,6 +3,6 @@
 *.spec
 *.pkl
 __pycache__
-build
+build/**
 colorize.py
 gimp_colorize.py
