@@ -1,5 +1,5 @@
 # Clonium
-PC analogue of android [Clonium](http://4pda.ru/forum/lofiversion/index.php?t632925.html) game (from scratch).
+PC analogue of [Android Clonium](http://4pda.ru/forum/lofiversion/index.php?t632925.html) game (from scratch).
 <br>
 ![android-clonium](https://user-images.githubusercontent.com/30413024/45918854-87a5e180-be95-11e8-93e1-2e844d27f841.jpeg)
 <br>
@@ -19,6 +19,7 @@ When checker explodes on other checkers, levels are summarized and new checkers 
 Victory: capture all checkers.
 
 # Strength of bots
+Bots are much tougher than in Android Clonium.
 I can win _holes2_ and _clip2_ on rather small boards, the larger the harder, lose to _holes3_ and _clips3_.
 In general, _holesN_ is stronger than _clipsN_.
 
