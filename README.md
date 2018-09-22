@@ -5,7 +5,7 @@ PC analogue of [Android Clonium](http://4pda.ru/forum/lofiversion/index.php?t632
 <br>
 Dependencies: [python3](https://www.python.org/downloads/), [pygame](https://www.pygame.org/).
 
-[**Rules**](https://github.com/pier-bezuhoff/clonium/wiki/Rules-of-Clonium)
+[**Rules** at wiki](https://github.com/pier-bezuhoff/clonium/wiki/Rules-of-Clonium)
 
 # Strength of bots
 Bots are much tougher than in Android Clonium.
