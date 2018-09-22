@@ -5,7 +5,7 @@
 import menu
 
 def main():
-	menu.Menu()
+    menu.Menu()
 
 if __name__ == '__main__':
-	main()
+    main()
