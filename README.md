@@ -1,7 +1,8 @@
 # Clonium
 PC analogue of android [Clonium](http://4pda.ru/forum/lofiversion/index.php?t632925.html) game.
-
-Dependencies: python3, pygame.
+![android-clonium](https://user-images.githubusercontent.com/30413024/45918854-87a5e180-be95-11e8-93e1-2e844d27f841.jpeg)
+<br>
+Dependencies: [python3](https://www.python.org/downloads/), [pygame](https://www.pygame.org/).
 
 # Rules:
 There are different clips/checkers on the board.
@@ -13,6 +14,7 @@ When level of checker reaches 3, after next level-up it explodes in four directi
 ![3-checker-explosion](https://user-images.githubusercontent.com/30413024/45918562-7bb82080-be91-11e8-9722-672dfb946048.png)
 <br>
 When checker explodes on other checkers, levels are summarized and new checkers get color (and owner) of exploded one.
+<br>
 Victory: capture all checkers.
 
 # Strength of bots
@@ -23,7 +25,7 @@ In general, _holesN_ is stronger than _clipsN_.
 - [x] Standard clonium rules.
 - [x] Create game with custom map, players and bots' strategies.
 - [x] Human vs Human, Human vs Bot and Bot vs Bot modes (with any number of players).
-- [x] Bots' strategies (_holesN_: maximizing overall level, _clipsN_: maximizing number of checkers and random).
+- [x] Bots' strategies (_holesN_: maximizing overall level, _clipsN_: maximizing number of checkers and _random_).
 - [x] Different depths of strategy (_N_ in _holesN_ and _clipsN_).
 - [x] Create, edit and save maps in Map Editor.
 - [x] Autosave initial board and history of turns on quit.
