@@ -31,10 +31,14 @@ In general, _holesN_ is stronger than _clipsN_.
 - [x] Create, edit and save maps in Map Editor.
 - [x] Autosave initial board and history of turns on quit.
 - [x] Preview of board when loading game or map.
+- [x] Highlight current player checkers.
+- [x] Highlight last turn (deltas).
 - [x] Editable settings in "settings.json".
 - [ ] Undo turn (bug).
 - [ ] Back to main menu on win/defeat.
+- [ ] Online stat.
 - [ ] "Edit" and "Create" buttons on "New game" screen.
 - [ ] Optimize strategies (especially _clips3_ and _holes3_ and more).
 - [ ] Add other strategies.
 - [ ] Better GUI.
+- [ ] Compile and check on Windows.
