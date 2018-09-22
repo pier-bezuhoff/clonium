@@ -5,7 +5,7 @@ PC analogue of android [Clonium](http://4pda.ru/forum/lofiversion/index.php?t632
 <br>
 Dependencies: [python3](https://www.python.org/downloads/), [pygame](https://www.pygame.org/).
 
-# Rules:
+# Rules
 There are different clips/checkers on the board.
 Checker has number of holes (level) and color (marks its owner).
 Each player has own set of checkers and could increase level of one of them in his turn.
