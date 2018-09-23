@@ -52,26 +52,21 @@ class App(ShowBase):
         # info = self.pipe.getDisplayInformation()
         # for i in range(info.getTotalDisplayModes()):
         #     print(info.getDisplayModeWidth(i), info.getDisplayModeHeight(i))
-        self.tkRoot.update()
         self.tkRoot.title(request("display.title"))
-        screen_width, screen_height = self.tkRoot.winfo_screenwidth(), self.tkRoot.winfo_screenheight()
-        # pad = 0
-        # self.tkRoot.geometry(
-        #     "{}x{}+0+0".format(screen_width - pad, screen_height - pad))
+        width, height = request("display.resolution")
+        width = width or self.tkRoot.winfo_width()
+        height = height or self.tkRoot.winfo_height()
         id = self.tkRoot.winfo_id()
-        width, height = self.tkRoot.winfo_width(), self.tkRoot.winfo_height()
+        self.tkRoot.geometry(
+            "{}x{}+0+0".format(width, height))
+        self.tkRoot.update()
+        self.makeDefaultPipe()
         prop = WindowProperties()
         prop.setParentWindow(id)
         prop.setOrigin(0, 0)
         prop.setSize(width, height)
-        self.makeDefaultPipe()
+        prop.setFullscreen(request("display.fullscreen"))
         self.openDefaultWindow(props=prop)
-        # width, height = request("display.resolution")
-        # prop.setSize(
-        #     width or info.getDisplayModeWidth(0),
-        #     height or info.getDisplayModeHeight(0))
-        # prop.setFullscreen(request("display.fullscreen"))
-        # self.win.requestProperties(prop)
 
     def initialActions(self):
         self.accept('quit', self.quit)
@@ -649,7 +644,7 @@ class App(ShowBase):
 
 def main():
     app = App()
-    MainMenu(app.tkRoot).pack()
+    MainMenu(app).pack()
     app.run()
 
 

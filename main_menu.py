@@ -31,7 +31,9 @@ CONSTRUCT_BOARD_DIALOG_POS = (0, 0.1, -0.3)
 
 class MainMenu(ttk.Frame):
 
-    def __init__(self, master):
+    def __init__(self, app):
+        master = app.tkRoot
+        self.app = app
         ttk.Frame.__init__(self, master)
         self.bind('Escape', self.quit)
         self.bind('Return', self.new_game)
@@ -55,7 +57,19 @@ class MainMenu(ttk.Frame):
             font="Ubuntu 16")
 
     def new_game(self, event=None):
-        print("MainMenu.new_game")
+        self.new_default_game()
+
+    def start_game(self, board, bots=None, order=None):
+        self.destroy()
+        self.app.startGame(board=board, bots=bots, order=order)
+
+    # tmp
+    def new_default_game(self):
+        board = core.Board.new_rounded_rectangle(6, 6, 0)
+        board.spawn2(padding=1)
+        bots = {1: 'levels-2'}
+        order = None
+        self.start_game(board, bots, order)
 
     def load_game(self, event=None):
         print("MainMenu.load_game")
