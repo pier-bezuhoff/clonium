@@ -152,7 +152,8 @@ class Board(dict):
             (min_x + padding, min_y + padding),
             (max_x - padding, max_y - padding)
         ]
-        population = {pos: (player, level) for player, pos in enumerate(poss, 1)}
+        population = {
+            pos: (player, level) for player, pos in enumerate(poss, 1)}
         self.spawn(population)
 
     def spawn4(self, padding=1, level=N):
@@ -163,7 +164,8 @@ class Board(dict):
             max_y - padding, min_y + padding
         )
         poss = product((max_x, min_x), (max_y, min_y))
-        population = {pos: (player, level) for player, pos in enumerate(poss, 1)}
+        population = {
+            pos: (player, level) for player, pos in enumerate(poss, 1)}
         self.spawn(population)
 
     # content properties
@@ -413,11 +415,14 @@ class Board(dict):
             return ch
         else:
             ch.add(pos)
-            cross = {p for p in safe_cross(self, pos)
+            cross = {
+                p for p in safe_cross(self, pos)
                 if self[p][1] == N and p not in ch}
             while cross:
                 ch.update(cross)
-                cross = set().union(*({p for p in safe_cross(self, p0)
+                cross = set().union(*(
+                    {
+                        p for p in safe_cross(self, p0)
                         if self[p][1] == N and p not in ch}
                     for p0 in cross))
             return ch
@@ -464,8 +469,9 @@ def make_turn(board, turn, player):
 def make_turns(board, history):
     """initial_board, history -> final_board,
     history: [(player, (x, y)), ...]"""
-    next_board = (lambda b, turn_player:
-        make_turn(b, turn_player[1], turn_player[0]))
+    next_board = (
+        lambda b, turn_player: make_turn(
+            b, turn_player[1], turn_player[0]))
     return reduce(next_board, history, board.copy())
 
 
@@ -492,7 +498,8 @@ def multiply_variants(board, deep, player, order):
 def value_turn(player, turn, board, order, value_func, deep=1):
     """-> 'value' of the `turn` for the the `player`,
     `value_func`(board) -> value"""
-    variants = all_variants(make_turn(board, turn, player), len(order) - 1,
+    variants = all_variants(
+        make_turn(board, turn, player), len(order) - 1,
         shift_player(player, order, board), order)
     if deep == 1:
         variant = min(variants, key=value_func, default=None)
@@ -500,8 +507,11 @@ def value_turn(player, turn, board, order, value_func, deep=1):
             return inf  # win
         return value_func(variant)
     elif deep > 1:
-        return min((max((value_turn(player, turn, board, order,
-                    deep=deep - 1, value_func=value_func)
+        return min((
+            max((
+                value_turn(
+                    player, turn, board, order, deep=deep - 1,
+                    value_func=value_func)
                 for turn in board.player_poss(player)), default=0)
             for board in variants), default=inf)
 
@@ -511,19 +521,19 @@ def value_turn(player, turn, board, order, value_func, deep=1):
 
 # # saves
 def save_history(history):
-    ...
+    pass
     # with open(request("save.history_filename"), 'wb') as file:
     #     pickle.dump(history, file)
 
 
 def save_board(board):
-    ...
+    pass
     # with open(request("save.board_filename"), 'wb') as file:
     #     pickle.dump(board, file)
 
 
 def save_order(order):
-    ...
+    pass
     # with open(request("save.order_filename"), 'wb') as file:
     #     pickle.dump(order, file)
 
@@ -535,11 +545,14 @@ def board2str(board, none=' ' * 6, empty='_' * 5 + '|', fill="{}x[{}]|"):
         return sorted(set(map(itemgetter(xi), board)))
 
     def new_str(pos):
-        return ((empty if board.is_empty_pos(pos)
-            else fill.format(*reversed(board[pos])))
-        if pos in board else none)
+        return (
+            (
+                empty if board.is_empty_pos(pos)
+                else fill.format(*reversed(board[pos])))
+            if pos in board else none)
 
-    return '\n'.join(''.join(new_str((x, y)) for x in dimension(0))
+    return '\n'.join(
+        ''.join(new_str((x, y)) for x in dimension(0))
         for y in dimension(1)) + '\n'
 
 
@@ -552,8 +565,9 @@ def cross(pos):
 def safe_cross(board, pos):
     "-> iterator of existing 4-vicinity of the `pos`"
     x, y = pos
-    return filter(lambda pos: pos in board,
-        [(x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1)])
+    return filter(
+        lambda pos: pos in board,
+        ((x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1)))
 
 
 def pos2vector(pos, cell_size, z=0):
@@ -579,15 +593,15 @@ def strategy(name):
 def checkersX(player, poss, board, order, deep):
     "the best turn for max checkers (with the `deep`)"
     func = partial(Board.player_population, player=player)
-    return max(poss, key=lambda pos: value_turn(player, pos, board, order,
-        deep=deep, value_func=func))
+    return max(poss, key=lambda pos: value_turn(
+            player, pos, board, order, deep=deep, value_func=func))
 
 
 def levelsX(player, poss, board, order, deep):
     "the best turn for max levels (with the `deep`)"
     func = partial(Board.player_level, player=player)
-    return max(poss, key=lambda pos: value_turn(player, pos, board, order,
-        deep=deep, value_func=func))
+    return max(poss, key=lambda pos: value_turn(
+        player, pos, board, order, deep=deep, value_func=func))
 
 
 @strategy('checkers-1')
@@ -639,8 +653,8 @@ def jumping_maker(obj, start, end, h, degree=360):
     def trajectory(t):
         obj.setHpr(
             Vec3(0, p, r) * (degree * t))
-        obj.setPos(start + v * t +
-            Vec3(0, 0, h * sin((0.99 * pi) * t)))  # T < `pi` => covering
+        obj.setPos(start + v * t + Vec3(
+            0, 0, h * sin((0.99 * pi) * t)))  # T < `pi` => covering
     return trajectory
 
 

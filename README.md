@@ -18,8 +18,10 @@ Dependencies: [python3](https://www.python.org/downloads/), [panda3d](https://ww
 - [ ] Preview of board when loading game or map.
 - [x] Highlight current player checkers.
 - [x] Highlight last turn (deltas).
+- [x] Perspective and float view (on _Tab_).
+- [x] Turn board on 90 degrees (on _left arrow_ and _right arrow_)
 - [x] Editable settings in "settings.json".
-- [x] Undo turn.
+- [x] Undo turn (on _down arrow_).
 - [ ] Back to main menu on win/defeat.
 - [ ] Online stat.
 - [ ] Optimize strategies (especially _clips3_ and _holes3_ and more).
