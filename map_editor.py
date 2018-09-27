@@ -10,6 +10,7 @@ request = preference.request
 
 td_style = request("core.style")
 
+
 class MapEditor(gui.Desktop):
 
     items = core.load_items()
@@ -22,9 +23,9 @@ class MapEditor(gui.Desktop):
         self.connect(gui.QUIT, self.quit)
         self.board = board
         container = gui.Container(width=request("map_editor.width"), height=request("map_editor.height"))
-        
+
         spacer = request("map_editor.space_size")
-        
+
         self.new_dialog = NewMapDialog()
         self.new_dialog.connect(gui.CHANGE, self.action_new)
         self.open_dialog = FileDialog("Choose map", "Choose",
@@ -37,10 +38,10 @@ class MapEditor(gui.Desktop):
             exts=['map'],
             save=True)
         self.save_dialog.connect(gui.CHANGE, self.action_saveas)
-        
+
         # self.help_dialog = HelpDialog()
-        
-        self.menus = menus = gui.Menus([ # QUESTION: ?may be put it into json: {"<menu>": "<method name>", ...}
+        # QUESTION: may be put it into json: {"<menu>": "<method name>", ...}
+        self.menus = menus = gui.Menus([
             ('File/New', self.new_dialog.open, None),
             ('File/Open', self.open_dialog.open, None),
             ('File/Save', self.action_save, None),
@@ -52,7 +53,6 @@ class MapEditor(gui.Desktop):
             ('Add/Add left column', self.add_left_column, None),
             ('Add/Add right column', self.add_right_column, None),
             ('Add/Add cells', self.add_cells, None),
-            ('Add/Add clips', self.add_clips, None),
             ('Remove/Reduce', self.reduce, None),
             ('Remove/Remove top row', self.remove_top_row, None),
             ('Remove/Remove bottom row', self.remove_bottom_row, None),
@@ -64,6 +64,7 @@ class MapEditor(gui.Desktop):
             ('Remove/Remove all clips', self.remove_clips, None),
             ('Remove/Remove cells', self.remove_cells, None),
             ('Edit/Permute cells', self.permute_cells, None),
+            ('Edit/Permute players', self.permute_players, None),
             ('Edit/Permute clips', self.permute_clips, None)
             # ('Help/Help', self.help_dialog.open)
             ])
@@ -94,7 +95,7 @@ class MapEditor(gui.Desktop):
         # # :: new
         mode.rect.x, mode.rect.y = mode.style.x, mode.style.y
         mode.rect.w, mode.rect.h = mode.resize()
-        
+
         self.player_table = gui.Table()
         self.player_table.td(gui.Label("Holes"))
         self.player_table.tr()
@@ -127,90 +128,90 @@ class MapEditor(gui.Desktop):
         if board:
             self.painter.set_map(board)
         self.painter.rect.w, self.painter.rect.h = self.painter.resize()
-        
+
         self.widget = container
 
     def extend(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.extend(self.painter.board))
+            self.painter.set_map(self.painter.board.extend())
 
     def reduce(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.reduce_(self.painter.board))
+            self.painter.set_map(self.painter.board.reduce())
 
     def add_top_row(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.add_top_row(self.painter.board))
+            self.painter.set_map(self.painter.board.add_top_row())
 
     def add_bottom_row(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.add_bottom_row(self.painter.board))
+            self.painter.set_map(self.painter.board.add_bottom_row())
 
     def add_left_column(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.add_left_column(self.painter.board))
+            self.painter.set_map(self.painter.board.add_left_column())
 
     def add_right_column(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.add_right_column(self.painter.board))
+            self.painter.set_map(self.painter.board.add_right_column())
 
     def remove_top_row(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_top_row(self.painter.board))
+            self.painter.set_map(self.painter.board.remove_top_row())
 
     def remove_bottom_row(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_bottom_row(self.painter.board))
+            self.painter.set_map(self.painter.board.remove_bottom_row())
 
     def remove_left_column(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_left_column(self.painter.board))
+            self.painter.set_map(self.painter.board.remove_left_column())
 
     def remove_right_column(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_right_column(self.painter.board))
+            self.painter.set_map(self.painter.board.remove_right_column())
 
     def remove_same_clips(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_clips(self.painter.board, condition=lambda clip: clip == (self.player, self.amount)))
+            self.painter.set_map(self.painter.board.empty_cells(condition=lambda cell: cell == (self.player, self.amount)))
 
     def remove_same_player_clips(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_clips(self.painter.board, condition=lambda clip: clip[0] == self.player))
+            self.painter.set_map(self.painter.board.empty_cells(condition=lambda cell: cell[0] == self.player))
 
     def remove_same_amount_clips(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_clips(self.painter.board, condition=lambda clip: clip[1] == self.amount))
+            self.painter.set_map(self.painter.board.empty_cells(condition=lambda cell: cell[1] == self.amount))
 
     def remove_clips(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_clips(self.painter.board))
+            self.painter.set_map(self.painter.board.empty_cells())
 
     def remove_cells(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.remove_cells(self.painter.board))
+            self.painter.set_map(self.painter.board.remove_all_cells())
 
     def add_cells(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.add_cells(self.painter.board))
+            self.painter.set_map(self.painter.board.fill_cells())
 
-    def add_clips(self, *pargs):
+    def permute_players(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.add_clips(self.painter.board, self.player, self.amount))
+            self.painter.set_map(self.painter.board.permute_players())
 
     def permute_clips(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.permute_clips(self.painter.board))
+            self.painter.set_map(self.painter.board.permute_checkers())
 
     def permute_cells(self, *pargs):
         if self.painter.board is not None:
-            self.painter.set_map(core.permute_cells(self.painter.board))
+            self.painter.set_map(self.painter.board.permute_cells())
 
     def choose_player(self):
         if self.painter.board is not None:
             title = gui.Label("Choose player")
             table = gui.Table()
-            players = list(sorted(core.map_players(self.painter.board)))
+            players = list(sorted(self.painter.board.players))
             radios = gui.Group(value=self.player_input.value)
             for player in players:
                 table.td(gui.Radio(radios, value=str(player)), style=td_style)
@@ -258,7 +259,7 @@ class MapEditor(gui.Desktop):
 
     def set_brush(self):
         self.painter.set_brush(brush=self.mode.value, player=self.player, amount=self.amount)
-        
+
     def action_new(self):
         self.new_dialog.close()
         self.filename = self.new_dialog.filename
@@ -266,7 +267,7 @@ class MapEditor(gui.Desktop):
         board = self.new_dialog.value
         self.painter.set_map(board)
         self.set_brush()
-        
+
     def action_save(self, *pargs):
         if self.painter.board is not None:
             core.save_map(self.painter.board, self.filename, full=True)
@@ -283,13 +284,13 @@ class MapEditor(gui.Desktop):
             self.save_dialog.open()
         else:
             print("WARNING: Nothing done, nothing to save")
-        
+
     def action_saveas(self):
         self.save_dialog.close()
         self.filename = self.save_dialog.value
         self.filename_input.value = self.filename.split('/')[-1]
         core.save_map(self.painter.board, self.filename, full=True)
-        
+
     def new_map(self):
         self.open_dialog.close()
         self.filename = self.open_dialog.value
@@ -299,6 +300,7 @@ class MapEditor(gui.Desktop):
         name, ext = self.filename.rsplit('.', 1)
         self.filename = request("map_editor.autosave_pattern").format(name=name, ext=ext)
         self.filename_input.value = self.filename.split('/')[-1]
+
 
 class Painter(gui.Widget):
 
@@ -332,14 +334,14 @@ class Painter(gui.Widget):
         self.items = core.transformed_items(items=Painter.items, cell_size=self.cell_size)
         self.cell_image = pygame.transform.smoothscale(Painter.cell_image, (self.cell_size, self.cell_size))
         self.none_image = pygame.transform.smoothscale(Painter.none_image, (self.cell_size, self.cell_size))
-        self.shift = core.shift(board)
+        self.shift = board.shift
         self.repaint()
 
     def set_brush(self, brush, player, amount):
         self.brush = brush
         self.player = player
         self.amount = amount
-        
+
     def event(self, e):
         if self.board and self.brush:
             if e.type == gui.MOUSEBUTTONDOWN:
@@ -410,8 +412,10 @@ class Painter(gui.Widget):
     def expand2(self, pos, shift=(0, 0), margin=0):
         return core.expand2(self.cell_size, pos, shift, margin=margin)
 
+
 def main():
     MapEditor().run()
+
 
 if __name__ == '__main__':
     main()

@@ -6,7 +6,7 @@ from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT, K_RETURN
 import pgu_gui as gui
 
 from preference import request
-from core import formats
+from core import Board, formats
 import core
 import preference
 
@@ -270,7 +270,7 @@ class NewGameDialog(gui.Dialog):
         fd.open()
 
     def show_players_preference(self):
-        self.players = core.map_players(self.map)
+        self.players = self.map.players
         self.bots = {}
         self.bot_buttons = {}
         if self.preview is None:
@@ -385,7 +385,7 @@ class Preview(gui.Widget):
         self.font = core.load_font(request("preview.font.name"), request("preview.font.size"))
         self.cell_size = core.calculate_cell_size(min_size=min(self.width, self.height), board=board)
         self.items = core.transformed_items(items=Preview.items, cell_size=self.cell_size)
-        self.shift = core.shift(board)
+        self.shift = board.shift
         # bg
         for pos in board:
             pygame.draw.rect(self.surface, request("board.cell_color"), self.expand4(pos, self.shift, margin=1))
@@ -464,7 +464,7 @@ class NewMapDialog(gui.Dialog):
         show_button = gui.Button('Show')
         show_button.connect(gui.CLICK, self.new_size)
         table.td(show_button, style=td_style)
-        self.board = core.rectangle_board(request("dialog.new_map_dialog.board_width"), request("dialog.new_map_dialog.board_height"))
+        self.board = Board.new_rectangle(request("dialog.new_map_dialog.board_width"), request("dialog.new_map_dialog.board_height"))
         self.preview = Preview()
         table.tr()
         table.td(self.preview, style=td_style)
@@ -479,11 +479,11 @@ class NewMapDialog(gui.Dialog):
         gui.Dialog.__init__(self, title, table)
 
     def new_size(self):
-        self.board = core.rectangle_board(int(self.width_input.value), int(self.height_input.value))
+        self.board = Board.new_rectangle(int(self.width_input.value), int(self.height_input.value))
         self.preview.set_map(self.board)
 
     def ok_clicked(self):
-        self.value = core.rectangle_board(int(self.width_input.value), int(self.height_input.value))
+        self.value = Board.new_rectangle(int(self.width_input.value), int(self.height_input.value))
         self.filename = preference.map_filename(self.filename_input.value)
         self.send(gui.CHANGE)
 

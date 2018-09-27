@@ -71,7 +71,8 @@ class Menu(object):
         def on_change(dialog):
             dialog.close()
             self.filename = dialog.filename
-            self.game = game.Game(board=dialog.map, bots=dialog.bots) # GameWidget(board=dialog.map, bots=dialog.bots)
+            # GameWidget(board=dialog.map, bots=dialog.bots)
+            self.game = game.Game(board=core.Board(dialog.map), bots=dialog.bots)
             # self.game.open()
             self.game.start()
         dialog.connect(gui.CHANGE, on_change, dialog)
@@ -87,10 +88,10 @@ class Menu(object):
         self.close()
         sys_exit()
 
+
 def main():
     Menu()
 
+
 if __name__ == '__main__':
     main()
-
-        

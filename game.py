@@ -18,18 +18,18 @@ class Game(object):
 
     items = core.load_items()
 
-    def __init__(self, board, bots=None, N=3, order=None, turn=None, surface=None, initial_board=None, history=None, loosers=None):
+    def __init__(self, board, bots=None, order=None, turn=None, surface=None, initial_board=None, history=None, loosers=None):
         """board = {(x:int, y:int): (player_index or -1, n), ...}"""
-        self.N = N
         self.board = board.copy()
         self.initial_board = board.copy() if initial_board is None else initial_board.copy()
         self.history = [] if history is None else history.copy()
         self.bots = [] if bots is None else bots.copy()
         if order is None:
-            self.order = list(core.map_players(self.board))
+            self.order = list(self.board.players)
             shuffle(self.order)
         else:
             self.order = order.copy()
+        self.initial_order = self.order.copy()
         self.turn = self.order[0] if turn is None else turn # index of turning player
         self.display = surface
         self.loosers = [] if loosers is None else loosers
@@ -65,7 +65,7 @@ class Game(object):
         pygame.display.update()
 
     def players(self):
-        return core.map_players(self.board)
+        return self.board.players
 
     def start(self):
         if request("core.autosave"):
@@ -82,7 +82,7 @@ class Game(object):
         pygame.display.set_caption('Clonium')
         pygame.display.set_icon(pygame.image.load(preference.game_icon()))
         self.news = set()
-        self.shift = core.shift(self.board)
+        self.shift = self.board.shift
         self.draw()
 
         while not self.end:
@@ -92,7 +92,7 @@ class Game(object):
             self.win_end()
         else:
             self.draw_end()
-        # core.print_map(self.board)
+        # print(self.board)
         self.quit()
 
     def next_turn(self):
@@ -101,7 +101,7 @@ class Game(object):
                 self.quit()
         self.draw()
         # self.__display()
-        poss = {pos for pos in self.board if self.board[pos][0] == self.turn}
+        poss = self.board.player_poss(self.turn)
         if poss:
             self.news = set()
             pygame.time.delay(request("game.delay"))
@@ -114,7 +114,7 @@ class Game(object):
                 self.history.append((self.turn, pos))
                 self.save_history()
             self.board[pos] = (self.turn, self.board[pos][1] + 1)
-            wave = self.board[pos][1] > self.N
+            wave = self.board[pos][1] > core.N
             delay = False
             while wave:
                 if delay:
@@ -122,16 +122,16 @@ class Game(object):
                 delay = True
                 current_board = self.board.copy()
                 for pos in current_board:
-                    if current_board[pos][1] > self.N:
+                    if current_board[pos][1] > core.N:
                         self.explode(pos)
-                wave = any(pair[1] > self.N for pair in self.board.values())
+                wave = any(pair[1] > core.N for pair in self.board.values())
             for pos, pair in self.board.items():
                 if pair[1] == 0 and pair[0] != 0:
                     self.board[pos] = (0, 0)
             for player in self.order:
-                if len([0 for pair in self.board.values() if pair[0] == player]) == 0 and player not in self.loosers:
+                if not self.board.player_alive(player) and player not in self.loosers:
                     self.loosers.append(player)
-        self.turn = core.shift_player(self.turn, self.order)
+        self.turn = core.shift_player(self.turn, self.order, self.board)
         self.end = len(self.players()) <= 1
 
     def player_choice(self, poss):
@@ -161,7 +161,7 @@ class Game(object):
 
     def __player_choice(self, poss):
         print("{} can choose turn from {}".format(self.turn, poss))
-        core.print_map(board=self.board)
+        print(self.board)
         turn = eval(input("{} choice: ".format(self.turn)))
         while turn not in poss:
             print("wrong choice... ({})".format(turn))
@@ -274,15 +274,20 @@ class Game(object):
             progress = 1000*(time() - start_time)/request("game.blast_time") - 1
 
     def undo(self):
-        n = len(self.order)
-        self.history = self.history[:-n]
-        board, player = core.make_turns(self.initial_board, self.history, N=self.N)
-        self.board = board
-        self.turn = core.shift_player(player, self.order, shift=1)
-        self.save_history()
-        poss = {pos for pos in self.board if self.board[pos][0] == self.turn}
-        self.draw()
-        return self.player_choice(poss)
+        # BUG
+        if len(self.history) >= len(self.initial_order):
+            player, turn = self.history.pop(-1)
+            while player != self.turn:
+                player, turn = self.history.pop(-1)
+            self.board, self.turn = core.make_turns(
+                self.initial_board, self.history)
+            self.order = [player for player in self.initial_order if player in self.board.players]
+            self.save_history()
+            self.draw()
+            poss = self.board.player_poss(self.turn)
+            return self.player_choice(poss)
+        else:
+            print("unable to undo: not enough history")
 
     def quit(self):
         self.print_results()
@@ -290,20 +295,25 @@ class Game(object):
         pygame.quit()
         sys_exit()
 
-    def save(self, filename=None): # ISSUE: save & load initial board and saved turns
-        if filename is None:
-            filename = preference.save_filename()
-        with open(filename, mode='rb') as file:
-            d = pickle.load(file)
-        with open(filename, mode='wb') as file:
-            d['loosers'] = self.loosers
-            pickle.dump(d, file)
+    def save(self, filename=None):
+        # ISSUE: save & load initial board and saved turns
+        self.save_history(filename)
+        # if filename is None:
+        #     filename = preference.save_filename()
+        # with open(filename, mode='rb') as file:
+        #     d = pickle.load(file)
+        # with open(filename, mode='wb') as file:
+        #     d['loosers'] = self.loosers
+        #     pickle.dump(d, file)
 
     def save_state(self, filename=None):
         if filename is None:
             filename = preference.save_filename()
         with open(filename, 'wb') as file:
-            pickle.dump({'board': self.initial_board, 'order': self.order, 'bots': self.bots, 'turns': [], 'turn': self.turn, 'N': self.N}, file)
+            pickle.dump({
+                'initial_board': self.initial_board,
+                'order': self.order, 'bots': self.bots,
+                'turns': [], 'turn': self.turn}, file)
 
     def save_history(self, filename=None):
         if filename is None:
@@ -313,6 +323,7 @@ class Game(object):
         with open(filename, mode='wb') as file:
             d['turns'] = self.history
             d['loosers'] = self.loosers
+            d['board'] = self.board
             pickle.dump(d, file)
 
     def win_end(self):

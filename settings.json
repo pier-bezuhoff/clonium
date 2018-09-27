@@ -85,17 +85,14 @@
 		"bots":
 		{
 			"choose_random": "random",
-			"1/clips": "clips1",
-			"2/clips": "clips2",
-			"1/holes": "holes1",
-			"2/holes": "holes2",
-			"3/holes": "holes3",
-			"1+/clips": "clips1+",
-			"2+/clips": "clips2+",
-			"1+/holes": "holes1+",
-			"2+/holes": "holes2+"
+			"1/checkers": "checkers-1",
+			"2/checkers": "checkers-2",
+			"3/checkers": "checkers-3",
+			"1/levels": "levels-1",
+			"2/levels": "levels-2",
+			"3/levels": "levels-3"
 		},
-		"bot": "clips1",
+		"bot": "checkers-1",
 		"new_colors":
 		[
 			[0, 0, 0], [255, 128, 0], [255, 128, 128],
@@ -141,9 +138,8 @@
 		"rules_filename": "{lib}/rules.txt",
 		"game_help_filename": "{lib}/game_help.txt",
 		"map_editor_help_filename": "{lib}/map_editor_help.txt"
-
 	},
-	"strf_map":
+	"map_str":
 	{
 		"none": "      ",
 		"empty": "_____|",
@@ -156,7 +152,7 @@
 			"extension": "map",
 			"filter": "*.map",
 			"description": "Map files",
-			"condition": "?map",
+			"condition": "map?",
 			"map_loader": "filename2map"
 		},	
 		"save":
@@ -164,14 +160,14 @@
 			"extension": "save",
 			"filter": "*.save",
 			"description": "Saved game files",
-			"condition": "?save"
+			"condition": "save?"
 		},
 		"state":
 		{
 			"extension": "save",
 			"filter": "*.save",
 			"description": "Saved state files",
-			"condition": "?save",
+			"condition": "save?",
 			"map_loader": "state2map",
 			"game_loader": "state2game"
 		},
@@ -180,7 +176,7 @@
 			"extension": "save",
 			"filter": "*.save",
 			"description": "Saved history files",
-			"condition": "?save",
+			"condition": "save?",
 			"map_loader": "history2map",
 			"game_loader": "history2game"
 		},
@@ -189,7 +185,7 @@
 			"extension": "*",
 			"filter": "*.*",
 			"description": "All files",
-			"condition": "?file"
+			"condition": "file?"
 		}
 	}
 }

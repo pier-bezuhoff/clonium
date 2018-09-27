@@ -9,15 +9,15 @@ Dependencies: [python3](https://www.python.org/downloads/), [pygame](https://www
 
 # Strength of bots
 Bots are much tougher than in Android Clonium.
-I can win _holes2_ and _clip2_ on rather small boards, the larger the harder, lose to _holes3_ and _clips3_.
-In general, _holesN_ is stronger than _clipsN_.
+I can win _levels2_ and _checkers2_ on rather small boards, the larger the harder, lose to _levels3_ and _checkers3_.
+In general, _levelsN_ is stronger than _checkersN_.
 
 # Progress
 - [x] Standard clonium rules.
 - [x] Create game with custom map, players and bots' strategies.
 - [x] Human vs Human, Human vs Bot and Bot vs Bot modes (with any number of players).
-- [x] Bots' strategies (_holesN_: maximizing overall level, _clipsN_: maximizing number of checkers and _random_).
-- [x] Different depths of strategy (_N_ in _holesN_ and _clipsN_).
+- [x] Bots' strategies (_levelsN_: maximizing overall level, _checkersN_: maximizing number of checkers and _random_).
+- [x] Different depths of strategy (_N_ in _levelsN_ and _checkersN_).
 - [x] Create, edit and save maps in Map Editor.
 - [x] Autosave initial board and history of turns on quit.
 - [x] Preview of board when loading game or map.
@@ -28,7 +28,7 @@ In general, _holesN_ is stronger than _clipsN_.
 - [ ] Back to main menu on win/defeat.
 - [ ] Online stat.
 - [ ] "Edit" and "Create" buttons on "New game" screen.
-- [ ] Optimize strategies (especially _clips3_ and _holes3_ and more).
+- [ ] Optimize strategies (especially _checkers3_ and _levels3_ and more).
 - [ ] Add other strategies.
 - [ ] Better GUI.
 - [ ] Compile and check on Windows.
