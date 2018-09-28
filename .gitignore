@@ -2,6 +2,7 @@
 *.*~
 *.spec
 *.pkl
+*.emacs*
 __pycache__
 build/**
 colorize.py

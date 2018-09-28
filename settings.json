@@ -162,23 +162,23 @@
 			"description": "Saved game files",
 			"condition": "save?"
 		},
+		"preset":
+		{
+			"extension": "save",
+			"filter": "*.save",
+			"description": "Saved game preset files",
+			"condition": "save?",
+			"map_loader": "preset2map",
+			"game_loader": "preset2game"
+		},
 		"state":
 		{
 			"extension": "save",
 			"filter": "*.save",
-			"description": "Saved state files",
+			"description": "Saved game files",
 			"condition": "save?",
 			"map_loader": "state2map",
 			"game_loader": "state2game"
-		},
-		"history":
-		{
-			"extension": "save",
-			"filter": "*.save",
-			"description": "Saved history files",
-			"condition": "save?",
-			"map_loader": "history2map",
-			"game_loader": "history2game"
 		},
 		"any":
 		{

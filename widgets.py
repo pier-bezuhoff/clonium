@@ -264,7 +264,7 @@ class NewGameDialog(gui.Dialog):
         fd = FileDialog("Choose map", "Choose",
             path=request("paths.map_folder"),
             preview=Preview(display_players=False),
-            exts=['map']
+            exts=['map', 'preset', 'state']
             )
         fd.connect(gui.CHANGE, self.load_map, fd)
         fd.open()

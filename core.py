@@ -368,17 +368,17 @@ class Board(dict):
     # board content editing
     def increase_level(self, pos, amount=1, player=None):
         "add `amount` to the cell at the `pos`"
-        cell = self[pos]
-        player = player or cell[0]
-        self[pos] = (player, cell[1] + amount)
+        p, level = self[pos]
+        player = player or p
+        self[pos] = (player, level + amount)
 
     def decrease_level(self, pos, amount=1):
         "subtract `amount` from the cell at the `pos`"
-        cell = self[pos]
-        if cell[1] <= amount:
+        p, level = self[pos]
+        if level <= amount:
             self[pos] = (0, 0)
         else:
-            self[pos] = (cell[0], cell[1] - amount)
+            self[pos] = (p, level - amount)
 
     def empty_cells(self, condition=lambda cell: True):
         "-> `board` with emptied every cell if `condition`(cell)"
@@ -491,9 +491,9 @@ def make_turn(board, turn, player):
 def make_turns(board, history):
     """initial_board, history -> final_board,
     history: [(player, (x, y)), ...]"""
-    next_board = (
-        lambda b, turn_player: make_turn(
-            b, turn_player[1], turn_player[0]))
+    def next_board(b, tp):
+        turn, player = tp
+        return make_turn(board=b, turn=turn, player=player)
     return reduce(next_board, history, board.copy())
 
 
@@ -655,64 +655,6 @@ def reduce2(cell_size, pos, backshift=(0, 0)):
         int(pos[1]/cell_size) - backshift[1])
 
 
-def load_font(name=None, size=None):
-    name = name or CORE_FONT_NAME
-    size = size or CORE_FONT_SIZE
-    return pygame.font.Font(pygame.font.match_font(name), size)
-
-
-def load_items():
-    global items
-    if items is None:
-        items = {
-            i: [
-                pygame.image.load(preference.clip_filename(n=i, color_i=j))
-                for j in range(len(CORE_COLORS))]
-            for i in range(1, 6)}
-    return items
-
-
-# save-load related functions
-def last_save(loosers, filename=None):
-    # ISSUE: save & load initial board and saved turns
-    if filename is None:
-        filename = preference.save_filename()
-    with open(filename, mode='rb') as file:
-        d = pickle.load(file)
-    with open(filename, mode='wb') as file:
-        d['loosers'] = loosers
-        pickle.dump(d, file)
-
-
-def save_state(initial_board, order, bots, turn, filename=None):
-    if filename is None:
-        filename = preference.save_filename()
-    with open(filename, 'wb') as file:
-        pickle.dump(
-            {
-                'board': initial_board, 'order': order, 'bots': bots,
-                'turns': [], 'turn': turn, 'N': N},
-            file)
-
-
-def save_history(history, loosers, filename=None):
-    if filename is None:
-        filename = preference.save_filename()
-    with open(filename, mode='rb') as file:
-        d = pickle.load(file)
-    with open(filename, mode='wb') as file:
-        d['turns'] = history
-        d['loosers'] = loosers
-        pickle.dump(d, file)
-
-
-def save_map(board, filename, full=False):
-    if not full:
-        filename = preference.map_filename(name=filename)
-    with open(filename, 'wb') as file:
-        pickle.dump(board, file)
-
-
 # string representation
 def player2str(player, bots):
     return "#{}: {} {}".format(player, bots[player] if player in bots else "player", "PC" if player in bots else "NPC")
@@ -755,6 +697,31 @@ def transformed_items(items, cell_size):
         for i, L in items.items()}
 
 
+# save-load related functions
+def load_font(name=None, size=None):
+    name = name or CORE_FONT_NAME
+    size = size or CORE_FONT_SIZE
+    return pygame.font.Font(pygame.font.match_font(name), size)
+
+
+def load_items():
+    global items
+    if items is None:
+        items = {
+            i: [
+                pygame.image.load(preference.clip_filename(n=i, color_i=j))
+                for j in range(len(CORE_COLORS))]
+            for i in range(1, 6)}
+    return items
+
+
+def save_map(board, filename, full=False):
+    if not full:
+        filename = preference.map_filename(name=filename)
+    with open(filename, 'wb') as file:
+        pickle.dump(board, file)
+
+
 # # decorated
 # loaders
 def loader(name):
@@ -778,68 +745,53 @@ def loadf_map(filename):
         return Board(pickle.load(file))
 
 
-@loader('history2game')
-def load_history(filename=None):
+@loader('state2game')
+def load_state(filename=None):
     if filename is None:
-        filename = preference.history_filename()
+        filename = preference.save_filename()
     with open(filename, mode='rb') as file:
         d = pickle.load(file)
     loosers = d.get('loosers', None)
     board = Board(d['board'])
-    initial_board = Board(d.get('initial_board', d['board']))
-    order = d['order']
-    bots = d['bots']
-    turns = d['turns']
-    p = d['turn']
-    for player, turn in turns:
-        assert p == player, "wrong turns order stored at '{}':\nplayer {} intead of {} (turn #{} {})".format(filename, player, p, turns.index((player, turn)), turn)
-        board = make_turn(board, turn, player)
-        p = shift_player(p, order, board)
-        while not board.player_alive(p):
-            p = shift_player(p, order, board)
+    initial_board = Board(d['initial_board']) if 'initial_board' in d else None
+    order = d.get('order', None)
+    initial_order = d.get('initial_order', None)
+    bots = d.get('bots', None)
+    history = d.get('history', None)
+    player = d.get('player', None)
     return dict(
         initial_board=initial_board, board=board,
-        bots=bots, order=order, turn=p, loosers=loosers)
+        bots=bots, initial_order=initial_order, order=order,
+        player=player, history=history, loosers=loosers)
 
 
-@loader('state2game')
-def load_state(filename=None, preserve_order=True):
+@loader('preset2game')
+def load_preset(filename=None, preserve_order=True):
     if filename is None:
         filename = preference.save_filename()
     with open(filename, mode='rb') as file:
         d = pickle.load(file)
     board = Board(d.get('initial_board', d['board']))
-    order = d['order']
-    bots = d['bots']
-    first_player = d['turn']
+    order = d.get('initial_order', d.get('order', None))
+    bots = d.get('bots', None)
     if preserve_order:
-        return dict(board=board, bots=bots, order=order, turn=first_player)
+        return dict(board=board, bots=bots, order=order)
     else:
         return dict(board=board, bots=bots)
 
 
-@loader('state2map')
+@loader('preset2map')
 def extract_map(filename):
     with open(filename, mode='rb') as file:
         d = pickle.load(file)
         return Board(d.get('initial_board', d['board']))
 
 
-@loader('history2map')
+@loader('state2map')
 def construct_map(filename):
     with open(filename, mode='rb') as file:
         d = pickle.load(file)
-    board = Board(d['board'])
-    order = d['order']
-    turns = d['turns']
-    p = d['turn']
-    for player, turn in turns:
-        assert p == player, "wrong turns order stored at '{}':\nplayer {} intead of {} (turn #{} {})".format(filename, player, p, turns.index((player, turn)), turn)
-        board = make_turn(board, turn, player)
-        p = shift_player(p, order, board)
-        while not board.player_alive(p):
-            p = shift_player(p, order, board)
-    return board
+    return Board(d['board'])
 
 
 def clear_load(filename):

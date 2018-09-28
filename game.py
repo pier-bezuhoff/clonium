@@ -10,7 +10,7 @@ import core
 import preference
 from preference import request
 
-explosive_animations = {} # fill with @explosive_animation
+explosive_animations = {} # filling with @explosive_animation
 
 
 class Game(object):
@@ -18,8 +18,15 @@ class Game(object):
 
     items = core.load_items()
 
-    def __init__(self, board, bots=None, order=None, turn=None, surface=None, initial_board=None, history=None, loosers=None):
-        """board = {(x:int, y:int): (player_index or -1, n), ...}"""
+    def __init__(self, board, bots=None, order=None, player=None, surface=None, initial_board=None, initial_order=None, history=None, loosers=None):
+        """
+        `initial_board` = `board` = {(x, y): (owner index or -1, level), ...}
+        `bots` = ?
+        `order` = [1st player index...]
+        `player` = player index of current player
+        `history` = [(player index, (turn_x, turn_y))...]
+        `loosers` = [1st looser index...]
+        """
         self.board = board.copy()
         self.initial_board = board.copy() if initial_board is None else initial_board.copy()
         self.history = [] if history is None else history.copy()
@@ -29,29 +36,29 @@ class Game(object):
             shuffle(self.order)
         else:
             self.order = order.copy()
-        self.initial_order = self.order.copy()
-        self.turn = self.order[0] if turn is None else turn # index of turning player
-        self.display = surface
+        self.initial_order = self.order.copy() if initial_order is None else initial_order.copy()
+        self.player = self.order[0] if player is None else player
+        self.surface = surface
         self.loosers = [] if loosers is None else loosers
-        self.end = len(self.players()) <= 1
+        self.end = len(self.board.players) <= 1
 
     def draw_background(self):
-        core.draw_background(surface=self.display, board=self.board, cell_size=self.cell_size, shift=self.shift)
+        core.draw_background(surface=self.surface, board=self.board, cell_size=self.cell_size, shift=self.shift)
 
     def draw_selection(self, pos, margin=5):
-        core.draw_selection(surface=self.display, pos=pos, cell_size=self.cell_size, margin=margin, shift=self.shift)
+        core.draw_selection(surface=self.surface, pos=pos, cell_size=self.cell_size, margin=margin, shift=self.shift)
 
     def draw_selections(self, margin=5):
-        core.draw_selections(surface=self.display, board=self.board, player=self.turn, cell_size=self.cell_size, margin=margin, shift=self.shift)
+        core.draw_selections(surface=self.surface, board=self.board, player=self.player, cell_size=self.cell_size, margin=margin, shift=self.shift)
 
     def draw_news(self):
-        core.draw_news(surface=self.display, news=self.news, cell_size=self.cell_size, shift=self.shift)
+        core.draw_news(surface=self.surface, news=self.news, cell_size=self.cell_size, shift=self.shift)
 
     def draw_items(self):
-        core.draw_items(surface=self.display, board=self.board, items=self.items, cell_size=self.cell_size, shift=self.shift)
+        core.draw_items(surface=self.surface, board=self.board, items=self.items, cell_size=self.cell_size, shift=self.shift)
 
     def draw_stat(self):
-        core.draw_stat(surface=self.display, font=self.font, player=self.turn, order=self.order)
+        core.draw_stat(surface=self.surface, font=self.font, player=self.player, order=self.order)
 
     def _draw(self):
         self.draw_background()
@@ -64,18 +71,16 @@ class Game(object):
         self._draw()
         pygame.display.update()
 
-    def players(self):
-        return self.board.players
-
     def start(self):
         if request("core.autosave"):
-            self.save_state()
+            self.save_preset()
+            self.save()
         # pygame
         pygame.init()
         self.font = core.load_font()
         self.width = self.height = max(request("game.width"), request("game.height"))
-        if self.display is None:
-            self.display = pygame.display.set_mode((self.width, self.height))
+        if self.surface is None:
+            self.surface = pygame.display.set_mode((self.width, self.height))
         self.cell_size = core.calculate_cell_size(min_size=min(self.width, self.height), board=self.board)
         self.items = core.transformed_items(items=Game.items, cell_size=self.cell_size)
         self.clock = pygame.time.Clock()
@@ -87,7 +92,7 @@ class Game(object):
 
         while not self.end:
             self.next_turn()
-        players = self.players()
+        players = self.board.players
         if players:
             self.win_end()
         else:
@@ -101,40 +106,38 @@ class Game(object):
                 self.quit()
         self.draw()
         # self.__display()
-        poss = self.board.player_poss(self.turn)
+        poss = self.board.player_poss(self.player)
         if poss:
             self.news = set()
             pygame.time.delay(request("game.delay"))
-            if self.turn in self.bots:
+            if self.player in self.bots:
                 pos = self.bot_choice(poss)
             else:
                 pos = self.player_choice(poss)
             self.news.add(pos)
             if request("core.autosave"):
-                self.history.append((self.turn, pos))
-                self.save_history()
-            self.board[pos] = (self.turn, self.board[pos][1] + 1)
+                self.history.append((self.player, pos))
+                self.save()
+            self.board.increase_level(pos, player=self.player)
             wave = self.board[pos][1] > core.N
+            # do delays between waves
             delay = False
             while wave:
                 if delay:
                     pygame.time.delay(request("game.blast_time"))
                 delay = True
-                current_board = self.board.copy()
-                for pos in current_board:
-                    if current_board[pos][1] > core.N:
-                        self.explode(pos)
+                for pos in self.board.overflowed_poss:
+                    self.explode(pos)
                 wave = any(pair[1] > core.N for pair in self.board.values())
-            for pos, pair in self.board.items():
-                if pair[1] == 0 and pair[0] != 0:
-                    self.board[pos] = (0, 0)
             for player in self.order:
                 if not self.board.player_alive(player) and player not in self.loosers:
                     self.loosers.append(player)
-        self.turn = core.shift_player(self.turn, self.order, self.board)
-        self.end = len(self.players()) <= 1
+                    self.order.remove(player)
+        self.player = core.shift_player(self.player, self.order, self.board)
+        self.end = len(self.board.players) <= 1
 
     def player_choice(self, poss):
+        poss = tuple(poss)
         while True:
             for event in pygame.event.get():
                 if event.type == QUIT or event.type == KEYUP and event.key in (K_ESCAPE,):
@@ -144,43 +147,34 @@ class Game(object):
                     x, y = int(x/self.cell_size), int(y/self.cell_size)
                     if (x, y) in poss:
                         return (x, y)
-                elif event.type == KEYUP and event.key in (K_LEFT,) and len(self.history) > len(self.order):
+                    else:
+                        continue
+                elif event.type == KEYUP and event.key in (K_LEFT,) and len(self.history) > len(self.initial_order):
                     return self.undo()
-
-    def bot_strategy(name):
-        def decorator(func):
-            bot_strategies[name] = func
-            return func
-        return decorator
 
     def bot_choice(self, poss):
         if poss:
-            return core.strategies[self.bots[self.turn]](board=self.board, order=self.order, player=self.turn, poss=poss)
+            return core.strategies[self.bots[self.player]](
+                board=self.board, order=self.order, player=self.player, poss=poss)
         else:
             return None
 
     def __player_choice(self, poss):
-        print("{} can choose turn from {}".format(self.turn, poss))
+        print("{} can choose turn from {}".format(self.player, poss))
         print(self.board)
-        turn = eval(input("{} choice: ".format(self.turn)))
+        turn = eval(input("{} choice: ".format(self.player)))
         while turn not in poss:
             print("wrong choice... ({})".format(turn))
-            turn = eval(input("{} choice: ".format(self.turn)))
+            turn = eval(input("{} choice: ".format(self.player)))
         return turn
 
     def explode(self, pos, x=None):
-        i, x = self.board[pos]
-        self.board[pos] = (i, x - 4)
-        if self.board[pos][1] == 0:
-            self.board[pos] = (0, 0)
-            self.news.remove(pos)
-        x, y = pos
+        player = self.board[pos][0]
+        self.board.decrease_level(pos, 4)
         explosive_animations[request("game.explosive_animation")](self, pos)
-        for pos in ((x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1)):
-            if pos in self.board:
-                x = self.board[pos][1]
-                self.board[pos] = (i, x + 1)
-                self.news.add(pos)
+        for p in core.safe_cross(self.board, pos):
+            self.board.increase_level(p, player=player)
+            self.news.add(p)
         self.draw()
 
     def explosive_animation(name):
@@ -204,18 +198,18 @@ class Game(object):
             # shift = 2*self.cell_size*(1 - cos(progress)) # shift [1; 0; 1] when progress [-1; 0; +1]
             shift = self.cell_size*abs(progress)
             width = height = int(round(shift))
-            h_item = pygame.transform.smoothscale(self.items[1][self.turn], (width, self.cell_size))
-            v_item = pygame.transform.smoothscale(self.items[1][self.turn], (self.cell_size, height))
+            h_item = pygame.transform.smoothscale(self.items[1][self.player], (width, self.cell_size))
+            v_item = pygame.transform.smoothscale(self.items[1][self.player], (self.cell_size, height))
             if progress < 0:
-                self.display.blit(h_item, (x + self.cell_size - shift, y)) # right
-                self.display.blit(h_item, (x, y)) # left
-                self.display.blit(v_item, (x, y + self.cell_size - shift)) # bottom
-                self.display.blit(v_item, (x, y)) # top
+                self.surface.blit(h_item, (x + self.cell_size - shift, y)) # right
+                self.surface.blit(h_item, (x, y)) # left
+                self.surface.blit(v_item, (x, y + self.cell_size - shift)) # bottom
+                self.surface.blit(v_item, (x, y)) # top
             else:
-                self.display.blit(h_item, (x + self.cell_size, y)) # right
-                self.display.blit(h_item, (x - shift, y)) # left
-                self.display.blit(v_item, (x, y + self.cell_size)) # bottom
-                self.display.blit(v_item, (x, y - shift)) # top
+                self.surface.blit(h_item, (x + self.cell_size, y)) # right
+                self.surface.blit(h_item, (x - shift, y)) # left
+                self.surface.blit(v_item, (x, y + self.cell_size)) # bottom
+                self.surface.blit(v_item, (x, y - shift)) # top
             pygame.display.update()
             self.clock.tick(request("game.fps"))
             progress = 1000*(time() - start_time)/request("game.blast_time") - 1
@@ -234,18 +228,18 @@ class Game(object):
             self.draw_stat()
             shift = 2*self.cell_size*(1 - cos(progress)) # shift [1; 0; 1] when progress [-1; 0; +1]
             width = height = int(round(shift))
-            h_item = pygame.transform.smoothscale(self.items[1][self.turn], (width, self.cell_size))
-            v_item = pygame.transform.smoothscale(self.items[1][self.turn], (self.cell_size, height))
+            h_item = pygame.transform.smoothscale(self.items[1][self.player], (width, self.cell_size))
+            v_item = pygame.transform.smoothscale(self.items[1][self.player], (self.cell_size, height))
             if progress < 0:
-                self.display.blit(h_item, (x + self.cell_size - shift, y)) # right
-                self.display.blit(h_item, (x, y)) # left
-                self.display.blit(v_item, (x, y + self.cell_size - shift)) # bottom
-                self.display.blit(v_item, (x, y)) # top
+                self.surface.blit(h_item, (x + self.cell_size - shift, y)) # right
+                self.surface.blit(h_item, (x, y)) # left
+                self.surface.blit(v_item, (x, y + self.cell_size - shift)) # bottom
+                self.surface.blit(v_item, (x, y)) # top
             else:
-                self.display.blit(h_item, (x + self.cell_size, y)) # right
-                self.display.blit(h_item, (x - shift, y)) # left
-                self.display.blit(v_item, (x, y + self.cell_size)) # bottom
-                self.display.blit(v_item, (x, y - shift)) # top
+                self.surface.blit(h_item, (x + self.cell_size, y)) # right
+                self.surface.blit(h_item, (x - shift, y)) # left
+                self.surface.blit(v_item, (x, y + self.cell_size)) # bottom
+                self.surface.blit(v_item, (x, y - shift)) # top
             pygame.display.update()
             self.clock.tick(request("game.fps"))
             progress = 1000*(time() - start_time)/request("game.blast_time") - 1
@@ -263,67 +257,58 @@ class Game(object):
             self.draw_items()
             self.draw_stat()
             shift = self.cell_size*(1 + progress)/2
-            # item = self.items[1][self.turn]
-            item = pygame.transform.rotate(self.items[1][self.turn], request("game.tps")*(1 + progress)/2)
-            self.display.blit(item, (x + shift, y)) # right
-            self.display.blit(item, (x - shift, y)) # left
-            self.display.blit(item, (x, y + shift)) # bottom
-            self.display.blit(item, (x, y - shift)) # top
+            # item = self.items[1][self.player]
+            item = pygame.transform.rotate(self.items[1][self.player], request("game.tps")*(1 + progress)/2)
+            self.surface.blit(item, (x + shift, y)) # right
+            self.surface.blit(item, (x - shift, y)) # left
+            self.surface.blit(item, (x, y + shift)) # bottom
+            self.surface.blit(item, (x, y - shift)) # top
             pygame.display.update()
             self.clock.tick(request("game.fps"))
             progress = 1000*(time() - start_time)/request("game.blast_time") - 1
 
     def undo(self):
         # BUG
-        if len(self.history) >= len(self.initial_order):
+        player, turn = self.history.pop(-1)
+        while player != self.player:
             player, turn = self.history.pop(-1)
-            while player != self.turn:
-                player, turn = self.history.pop(-1)
-            self.board, self.turn = core.make_turns(
-                self.initial_board, self.history)
-            self.order = [player for player in self.initial_order if player in self.board.players]
-            self.save_history()
-            self.draw()
-            poss = self.board.player_poss(self.turn)
-            return self.player_choice(poss)
-        else:
-            print("unable to undo: not enough history")
+        self.board, self.player = core.make_turns(
+            self.initial_board, self.history)
+        self.order = [player for player in self.initial_order if player in self.board.players]
+        if request('core.autosave'):
+            self.save()
+        self.draw()
+        poss = self.board.player_poss(self.player)
+        return self.player_choice(poss)
 
     def quit(self):
         self.print_results()
-        self.save()
+        if request('core.autosave'):
+            self.save()
         pygame.quit()
         sys_exit()
 
-    def save(self, filename=None):
-        # ISSUE: save & load initial board and saved turns
-        self.save_history(filename)
-        # if filename is None:
-        #     filename = preference.save_filename()
-        # with open(filename, mode='rb') as file:
-        #     d = pickle.load(file)
-        # with open(filename, mode='wb') as file:
-        #     d['loosers'] = self.loosers
-        #     pickle.dump(d, file)
-
-    def save_state(self, filename=None):
+    def save_preset(self, filename=None):
         if filename is None:
             filename = preference.save_filename()
         with open(filename, 'wb') as file:
             pickle.dump({
                 'initial_board': self.initial_board,
-                'order': self.order, 'bots': self.bots,
-                'turns': [], 'turn': self.turn}, file)
+                'initial_order': self.initial_order,
+                'bots': self.bots,
+            }, file)
 
-    def save_history(self, filename=None):
+    def save(self, filename=None):
         if filename is None:
             filename = preference.save_filename()
         with open(filename, mode='rb') as file:
             d = pickle.load(file)
         with open(filename, mode='wb') as file:
-            d['turns'] = self.history
-            d['loosers'] = self.loosers
             d['board'] = self.board
+            d['order'] = self.order
+            d['player'] = self.player
+            d['history'] = self.history
+            d['loosers'] = self.loosers
             pickle.dump(d, file)
 
     def win_end(self):
@@ -343,4 +328,4 @@ class Game(object):
 
     def display_text(self, text, pos=None, color=request("core.font.color")):
         if pos is None: pos = (self.width//2, self.height//2)
-        core.display_text(surface=self.display, text=text, pos=pos, font=self.font, color=color)
+        core.display_text(surface=self.surface, text=text, pos=pos, font=self.font, color=color)

@@ -53,12 +53,11 @@ class Menu(object):
         dialog = FileDialog("Choose saved game", "Choose",
             path=request("paths.save_folder"),
             preview=Preview(display_players=False),
-            exts=['state', 'history'])
+            exts=['state', 'preset'])
         def on_change(dialog):
             filename = dialog.value
             loader = dialog.format.loader
             self.game = game.Game(**loader(filename))
-            # self.game.open()
             self.game.start()
         dialog.connect(gui.CHANGE, on_change, dialog)
         dialog.open()

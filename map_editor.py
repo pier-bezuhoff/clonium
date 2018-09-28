@@ -31,7 +31,7 @@ class MapEditor(gui.Desktop):
         self.open_dialog = FileDialog("Choose map", "Choose",
             path=request("paths.map_folder"),
             preview=Preview(display_players=False),
-            exts=['map', 'state', 'history'])
+            exts=['map', 'preset', 'state'])
         self.open_dialog.connect(gui.CHANGE, self.new_map)
         self.save_dialog = FileDialog("Enter filename to save with", "Choose",
             path=request("paths.map_folder"),
