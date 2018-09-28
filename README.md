@@ -24,7 +24,7 @@ In general, _levelsN_ is stronger than _checkersN_.
 - [x] Highlight current player checkers.
 - [x] Highlight last turn (deltas).
 - [x] Editable settings in "settings.json".
-- [ ] Undo turn (bug).
+- [x] Undo turn.
 - [ ] Back to main menu on win/defeat.
 - [ ] Online stat.
 - [ ] "Edit" and "Create" buttons on "New game" screen.

@@ -147,10 +147,12 @@ class Game(object):
                     x, y = int(x/self.cell_size), int(y/self.cell_size)
                     if (x, y) in poss:
                         return (x, y)
+                elif event.type == KEYUP and event.key in (K_LEFT,):
+                    if len(self.history) >= len(self.initial_order):
+                        self.undo()
+                        poss = tuple(self.board.player_poss(self.player))
                     else:
-                        continue
-                elif event.type == KEYUP and event.key in (K_LEFT,) and len(self.history) > len(self.initial_order):
-                    return self.undo()
+                        print("not enought history to undo round")
 
     def bot_choice(self, poss):
         if poss:
@@ -268,18 +270,16 @@ class Game(object):
             progress = 1000*(time() - start_time)/request("game.blast_time") - 1
 
     def undo(self):
-        # BUG
+        "undo round => now current player can redo previous turn"
         player, turn = self.history.pop(-1)
         while player != self.player:
             player, turn = self.history.pop(-1)
-        self.board, self.player = core.make_turns(
-            self.initial_board, self.history)
+        self.board = core.make_turns(self.initial_board, self.history)
         self.order = [player for player in self.initial_order if player in self.board.players]
+        self.player = core.shift_player(self.history[-1][0], self.order, self.board) if self.history else self.order[0]
         if request('core.autosave'):
             self.save()
         self.draw()
-        poss = self.board.player_poss(self.player)
-        return self.player_choice(poss)
 
     def quit(self):
         self.print_results()

@@ -491,8 +491,8 @@ def make_turn(board, turn, player):
 def make_turns(board, history):
     """initial_board, history -> final_board,
     history: [(player, (x, y)), ...]"""
-    def next_board(b, tp):
-        turn, player = tp
+    def next_board(b, pt):
+        player, turn = pt
         return make_turn(board=b, turn=turn, player=player)
     return reduce(next_board, history, board.copy())
 
