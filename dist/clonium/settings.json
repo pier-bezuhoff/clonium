@@ -1,0 +1,191 @@
+{
+	"game":
+	{
+		"name": "Clonium",
+		"window_width": 800,
+		"window_height": 600,
+		"width": 640,
+		"height": 480,
+		"icon": ["{image_lib}", "icon.png"],
+		"delay": 500,
+		"blast_time": 300,
+		"fps": 50,
+		"tps": 50,
+		"explosive_animation": "linear_jump",
+		"explosive_animations": ["linear_jump", "jump", "rotate"],
+		"autosave": true
+	},
+	"map_editor":
+	{
+		"width": 800,
+		"height": 600,
+		"cell_size": 40,
+		"space_size": 8,
+		"view_width": 50,
+		"view_height": 50,
+		"player": 1,
+		"amount": 3,
+		"show_brush": true,
+		"cell_brush": ["{image_lib}", "cell_brush.png"],
+		"none_brush": ["{image_lib}", "none_brush.png"],
+		"autosave_pattern": "{name}-new.{ext}",
+		"background_color": [255, 255, 255],
+		"overlay_color": [0, 0, 0, 0]
+	},
+	"dialog":
+	{
+		"file_dialog":
+		{
+			"list_width": 350,
+			"list_height": 150
+		},
+		"text_dialog":
+		{
+			"width": 400,
+			"height": 200
+		},
+		"new_map_dialog":
+		{
+			"board_width": 5,
+			"board_height": 5,
+			"filename": "2X_5x5-new"
+		}
+	},
+	"main_menu":
+	{
+		"width": 1300,
+		"height": 700
+	},
+	"widget":
+	{
+		"surface_background_color": [255, 255, 255]
+	},
+	"preview":
+	{
+		"width": 150,
+		"height": 150,
+		"font":
+		{
+			"color": [200, 200, 255],
+			"name": "ubuntu-bold",
+			"size": 25
+		},
+		"background_color": [255, 255, 255]
+	},
+	"board":
+	{
+		"stat_center": [320, 10],
+		"stat_color": [255, 255, 255],
+		"cell_color": [0, 0, 128],
+		"background_color": [0, 0, 0],
+		"new_turn_color": [0, 255, 0],
+		"selection_color": [255, 255, 0]
+	},
+	"core":
+	{
+		"bots":
+		{
+			"choose_random": "random",
+			"1/checkers": "checkers-1",
+			"2/checkers": "checkers-2",
+			"3/checkers": "checkers-3",
+			"1/levels": "levels-1",
+			"2/levels": "levels-2",
+			"3/levels": "levels-3"
+		},
+		"bot": "checkers-1",
+		"new_colors":
+		[
+			[0, 0, 0], [255, 128, 0], [255, 128, 128],
+			[128, 0, 128], [0, 0, 128], [0, 128, 0],
+			[128, 0, 0], [128, 64, 0], [64, 128, 255],
+			[128, 128, 128], [255, 255, 255]
+		],
+		"colors":
+		[
+			[0, 0, 0], [0, 255, 0], [255, 0, 0],
+			[0, 0, 255], [0, 128, 0], [128, 0, 0],
+			[0, 0, 128], [128, 128, 128], [255, 255, 255]
+		],
+		"font":
+		{
+			"color": [255, 255, 255],
+			"name": "ubuntu",
+			"size": 20
+		},
+		"theme": "clean",
+		"themes": ["default", "clean", "gray"],
+		"set": "first_set",
+		"sets": ["first_set", "star_set"],
+		"style":
+		{
+			"padding_left": 4,
+			"padding_right": 4,
+			"padding_top": 2,
+			"padding_bottom": 2
+		}
+	},
+	"paths":
+	{
+		"save_folder": ["lib", "saves"],
+		"image_folder": ["lib", "images"],
+		"map_folder": ["lib", "maps"],
+		"theme_folder": ["lib", "themes"],
+		"set_folder": ["{image_lib}", "{name}"],
+		"checker_filename": ["{set}", "item{n}-{color_i}.png"],
+		"filename": ["{lib}", "{name}.{ext}"],
+		"autosave_name": "clonium",
+		"rules_filename": ["{lib}", "rules.txt"],
+		"game_help_filename": ["{lib}", "game_help.txt"],
+		"map_editor_help_filename": ["{lib}", "map_editor_help.txt"]
+	},
+	"map_str":
+	{
+		"none": "      ",
+		"empty": "_____|",
+		"fill": "{}x[{}]|"
+	},
+	"formats":
+	{
+		"map":
+		{
+			"extension": "map",
+			"filter": "*.map",
+			"description": "Map files",
+			"condition": "map?",
+			"map_loader": "filename2map"
+		},	
+		"save":
+		{
+			"extension": "save",
+			"filter": "*.save",
+			"description": "Saved game files",
+			"condition": "save?"
+		},
+		"preset":
+		{
+			"extension": "save",
+			"filter": "*.save",
+			"description": "Saved game preset files",
+			"condition": "save?",
+			"map_loader": "preset2map",
+			"game_loader": "preset2game"
+		},
+		"state":
+		{
+			"extension": "save",
+			"filter": "*.save",
+			"description": "Saved game files",
+			"condition": "save?",
+			"map_loader": "state2map",
+			"game_loader": "state2game"
+		},
+		"any":
+		{
+			"extension": "*",
+			"filter": "*.*",
+			"description": "All files",
+			"condition": "file?"
+		}
+	}
+}

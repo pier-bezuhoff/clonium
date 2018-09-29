@@ -28,8 +28,8 @@ MODLIBS=        $(LOCALMODLIBS) $(BASEMODLIBS)
 VERSION=	3.5
 srcdir=		..
 VPATH=		..
-abs_srcdir=	/build/python3.5-9imW1d/python3.5-3.5.2/build-shared/..
-abs_builddir=	/build/python3.5-9imW1d/python3.5-3.5.2/build-shared
+abs_srcdir=	/build/python3.5-cPdKow/python3.5-3.5.2/build-shared/..
+abs_builddir=	/build/python3.5-cPdKow/python3.5-3.5.2/build-shared
 
 
 CC=		x86_64-linux-gnu-gcc -pthread
