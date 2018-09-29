@@ -11,7 +11,6 @@ from panda3d.core import (
     Vec3, VBase4, LRotation,
     CollisionTraverser, CollisionHandlerQueue, CollisionRay, CollisionNode,
     BitMask32,
-    TextNode,
     DirectionalLight,
     TextureStage,
     WindowProperties
@@ -19,7 +18,6 @@ from panda3d.core import (
 from direct.task.Task import Task
 from direct.interval.MetaInterval import Sequence, Parallel
 from direct.interval.FunctionInterval import FunctionInterval
-from direct.gui.OnscreenText import OnscreenText
 
 # game imports
 import core
@@ -564,7 +562,7 @@ class App(ShowBase):
                 BEFORE_TASK_TIME, self.makeTurn, 'game.makeBotTurn',
                 extraArgs=[pos],
                 taskChain='game')
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             self.quit()
         finally:

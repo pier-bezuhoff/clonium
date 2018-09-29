@@ -199,7 +199,7 @@ class Board(dict):
 
     def player_level(self, player):
         "-> summary level of all player's cells"
-        return sum(map(itemgetter(1), self.player_part(player)))
+        return sum(map(itemgetter(1), self.player_part(player).cells))
 
     # poss
     @property
@@ -348,17 +348,17 @@ class Board(dict):
     # board content editing
     def increase_level(self, pos, amount=1, player=None):
         "add `amount` to the cell at the `pos`"
-        cell = self[pos]
-        player = player or cell[0]
-        self[pos] = (player, cell[1] + amount)
+        p, level = self[pos]
+        player = player or p
+        self[pos] = (player, level + amount)
 
     def decrease_level(self, pos, amount=1):
         "subtract `amount` from the cell at the `pos`"
-        cell = self[pos]
-        if cell[1] <= amount:
+        p, level = self[pos]
+        if level <= amount:
             self[pos] = (0, 0)
         else:
-            self[pos] = (cell[0], cell[1] - amount)
+            self[pos] = (p, level - amount)
 
     def empty_cells(self, condition=lambda cell: True):
         "-> `board` with emptied every cell if `condition`(cell)"
@@ -370,7 +370,7 @@ class Board(dict):
 
     def remove_all_cells(self):
         "-> {(0, 0), (0, 0)}"
-        return {(0, 0): (0, 0)}
+        return Board({(0, 0): (0, 0)})
 
     def fill_cells(self):
         "-> `board` with filled all inner holes with empty cells"
@@ -385,17 +385,19 @@ class Board(dict):
         "-> permuted `board` (keep cells, move players (colors only))"
         subboard = self.nonempty_part()
         players = list(subboard.players)
-        shuffle(players)
+        new_players = players.copy()
+        shuffle(new_players)
+        players_table = dict(zip(players, new_players))
         board = self.copy()
-        for pos, player in zip(subboard.poss, players):
-            board[pos] = (player, board[pos][1])
+        for pos, (player, level) in subboard.items():
+            board[pos] = (players_table[player], level)
         return board
 
     def permute_checkers(self):
         "-> permuted `board` (keep cells, move checkers)"
         poss, cells = list(self.poss), list(self.cells)
         shuffle(poss)
-        return {pos: cell for pos, cell in zip(poss, cells)}
+        return Board({pos: cell for pos, cell in zip(poss, cells)})
 
     def permute_cells(self):
         "-> permuted `board` (move cells (with checkers))"
@@ -405,7 +407,7 @@ class Board(dict):
         all_poss = list(
             product(range(min_x, max_x + 1), range(min_y, max_y + 1)))
         poss = sample(all_poss, n)
-        return {pos: cell for pos, cell in zip(poss, cells)}
+        return Board({pos: cell for pos, cell in zip(poss, cells)})
 
     # strategy-related
     def chain_poss(self, pos):

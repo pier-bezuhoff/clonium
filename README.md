@@ -27,4 +27,5 @@ Dependencies: [python3](https://www.python.org/downloads/), [panda3d](https://ww
 - [ ] Optimize strategies (especially _clips3_ and _holes3_ and more).
 - [ ] Add other strategies.
 - [ ] Better GUI.
-- [ ] Compile and check on Windows.
+- [ ] Try on other OSs.
+- [ ] Make executables for Linux and Windows.
