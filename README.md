@@ -28,7 +28,8 @@ In general, _levelsN_ is stronger than _checkersN_.
 - [ ] Back to main menu on win/defeat.
 - [ ] Online stat.
 - [ ] "Edit" and "Create" buttons on "New game" screen.
-- [ ] Optimize strategies (especially _checkers3_ and _levels3_ and more).
+- [ ] Optimize strategies (especially _checkers3_ and _levels3_).
 - [ ] Add other strategies.
 - [ ] Better GUI.
-- [ ] Compile and check on Windows.
+- [ ] Try on other OSs.
+- [ ] Make executables for Linux and Windows.
