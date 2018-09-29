@@ -6,18 +6,19 @@
 		"window_height": 600,
 		"width": 640,
 		"height": 480,
-		"icon": "{image_lib}/icon.png",
+		"icon": ["{image_lib}", "icon.png"],
 		"delay": 500,
 		"blast_time": 300,
 		"fps": 50,
 		"tps": 50,
 		"explosive_animation": "linear_jump",
-		"explosive_animations": ["linear_jump", "jump", "rotate"]
+		"explosive_animations": ["linear_jump", "jump", "rotate"],
+		"autosave": true
 	},
 	"map_editor":
 	{
-		"width": 640,
-		"height": 480,
+		"width": 800,
+		"height": 600,
 		"cell_size": 40,
 		"space_size": 8,
 		"view_width": 50,
@@ -25,8 +26,8 @@
 		"player": 1,
 		"amount": 3,
 		"show_brush": true,
-		"cell_brush": "{image_lib}/cell_brush.png",
-		"none_brush": "{image_lib}/none_brush.png",
+		"cell_brush": ["{image_lib}", "cell_brush.png"],
+		"none_brush": ["{image_lib}", "none_brush.png"],
 		"autosave_pattern": "{name}-new.{ext}",
 		"background_color": [255, 255, 255],
 		"overlay_color": [0, 0, 0, 0]
@@ -122,22 +123,21 @@
 			"padding_right": 4,
 			"padding_top": 2,
 			"padding_bottom": 2
-		},
-		"autosave": true
+		}
 	},
 	"paths":
 	{
-		"save_folder": "lib/saves",
-		"image_folder": "lib/images",
-		"map_folder": "lib/maps",
-		"theme_folder": "lib/themes",
-		"set_folder": "{image_lib}/{name}",
-		"clip_filename": "{set}/item{n}-{color_i}.png",
-		"filename": "{lib}/{name}.{ext}",
+		"save_folder": ["lib", "saves"],
+		"image_folder": ["lib", "images"],
+		"map_folder": ["lib", "maps"],
+		"theme_folder": ["lib", "themes"],
+		"set_folder": ["{image_lib}", "{name}"],
+		"checker_filename": ["{set}", "item{n}-{color_i}.png"],
+		"filename": ["{lib}", "{name}.{ext}"],
 		"autosave_name": "clonium",
-		"rules_filename": "{lib}/rules.txt",
-		"game_help_filename": "{lib}/game_help.txt",
-		"map_editor_help_filename": "{lib}/map_editor_help.txt"
+		"rules_filename": ["{lib}", "rules.txt"],
+		"game_help_filename": ["{lib}", "game_help.txt"],
+		"map_editor_help_filename": ["{lib}", "map_editor_help.txt"]
 	},
 	"map_str":
 	{

@@ -569,9 +569,6 @@ def safe_cross(board, pos):
         lambda pos: pos in board,
         ((x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1)))
 
-# pasted from panda3d-clonium/core.py
-# TODO: update applications! 
-
 
 # draw-related functions
 def explode(board, player, order):
@@ -660,8 +657,8 @@ def player2str(player, bots):
     return "#{}: {} {}".format(player, bots[player] if player in bots else "player", "PC" if player in bots else "NPC")
 
 
-def live_player2str(player, bots, n_clips, n_holes):
-    return "1) {} ({}/{})".format(player2str(player, bots), n_clips, n_holes)
+def live_player2str(player, bots, n_checkers, n_holes):
+    return "1) {} ({}/{})".format(player2str(player, bots), n_checkers, n_holes)
 
 
 def dead_player2str(player, bots, i):
@@ -709,7 +706,7 @@ def load_items():
     if items is None:
         items = {
             i: [
-                pygame.image.load(preference.clip_filename(n=i, color_i=j))
+                pygame.image.load(preference.checker_filename(n=i, color_i=j))
                 for j in range(len(CORE_COLORS))]
             for i in range(1, 6)}
     return items
@@ -792,11 +789,6 @@ def construct_map(filename):
     with open(filename, mode='rb') as file:
         d = pickle.load(file)
     return Board(d['board'])
-
-
-def clear_load(filename):
-    with open(filename, mode='rb') as file:
-        return pickle.load(file)
 
 
 # conditions

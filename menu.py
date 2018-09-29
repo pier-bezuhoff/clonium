@@ -5,7 +5,7 @@ import pygame
 import pgu_gui as gui
 
 import preference
-from preference import request
+from preference import request, folder
 import game
 import core
 from widgets import NewGameDialog, RulesDialog, FileDialog, Preview
@@ -17,7 +17,7 @@ class Menu(object):
 
     def __init__(self):
         self.desktop = gui.Desktop(theme=self.theme)
-        self.desktop.connect(gui.QUIT, self.close)
+        self.desktop.connect(gui.QUIT, self.on_quit)
 
         self.table = gui.Table(width=request("main_menu.width"), height=request("main_menu.height"))
         self.table.tr()
@@ -50,8 +50,9 @@ class Menu(object):
         ...
 
     def load_game(self):
-        dialog = FileDialog("Choose saved game", "Choose",
-            path=request("paths.save_folder"),
+        dialog = FileDialog(
+            "Choose saved game", "Choose",
+            path=folder('save'),
             preview=Preview(display_players=False),
             exts=['state', 'preset'])
         def on_change(dialog):
@@ -80,11 +81,12 @@ class Menu(object):
     def to_map_editor(self):
         MapEditor().run()
 
-    def close(self):
+    def on_quit(self):
         self.desktop.quit()
+        # BUG with closing
 
     def quit(self):
-        self.close()
+        self.on_quit()
         sys_exit()
 
 

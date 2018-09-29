@@ -1,11 +1,12 @@
 import os
+import os.path as op
 import fnmatch
 import pygame
 from pygame.locals import K_UP, K_DOWN, K_LEFT, K_RIGHT, K_RETURN
 
 import pgu_gui as gui
 
-from preference import request
+from preference import request, folder
 from core import Board, formats
 import core
 import preference
@@ -88,7 +89,7 @@ class FileDialog(gui.Dialog):
         files = []
         try:
             for i in os.listdir(self.curdir):
-                if os.path.isdir(os.path.join(self.curdir, i)):
+                if op.isdir(op.join(self.curdir, i)):
                     dirs.append(i)
                 elif fnmatch.fnmatch(i, ext_filter):
                     files.append(i)
@@ -111,14 +112,14 @@ class FileDialog(gui.Dialog):
         
     def _new_item(self):
         self.input_file.value = self.list.value
-        filename = os.path.abspath(os.path.join(self.curdir, self.input_file.value))
-        if os.path.isdir(filename):
+        filename = op.abspath(op.join(self.curdir, self.input_file.value))
+        if op.isdir(filename):
             self.input_file.value = ""
             self.curdir = filename
             self._list_dir()
             if self.preview is not None:
                 self.preview.clear()
-        elif self.preview is not None and os.path.isfile(filename):
+        elif self.preview is not None and op.isfile(filename):
             f = formats[self.selector.value]
             if f.map_loader is not None and f.check(filename):
                 self.preview.set_map(f.map_loader(filename))
@@ -135,7 +136,7 @@ class FileDialog(gui.Dialog):
         self.ext = self.selector.value
         f = formats[self.ext]
         if self.preview is not None:
-            filename = os.path.abspath(os.path.join(self.curdir, self.input_file.value))
+            filename = op.abspath(op.join(self.curdir, self.input_file.value))
             if f.map_loader is not None and f.check(filename):
                 self.preview.set_map(f.map_loader(filename))
             elif f.map_loader is None:
@@ -152,9 +153,9 @@ class FileDialog(gui.Dialog):
         self.input_file.value = filename
 
     def _dir_enter(self, event):
-        if os.path.isdir(self.input_dir.value) and os.path.abspath(self.input_dir.value) != os.path.abspath(self.curdir):
+        if op.isdir(self.input_dir.value) and op.abspath(self.input_dir.value) != op.abspath(self.curdir):
             self.input_file.value = ""
-            self.curdir = os.path.abspath(self.input_dir.value)
+            self.curdir = op.abspath(self.input_dir.value)
             self.list.clear()
             self._list_dir()
             if self.preview is not None:
@@ -178,14 +179,14 @@ class FileDialog(gui.Dialog):
                 if formats[self.ext].check(next_value):
                     self.list.group.value = next_value
         if e.key == K_LEFT:
-            self.input_dir.value = self.input_dir.value.rsplit('/', 1)[0]
+            self.input_dir.value = op.split(self.input_dir.value)[0]
             self._dir_enter(None)
 
     def _file_enter(self, event):
         self._button_okay_clicked()
 
     def _button_okay_clicked(self):
-        filename = os.path.join(self.curdir, self.input_file.value)
+        filename = op.join(self.curdir, self.input_file.value)
         if self.save:
             if formats[self.ext].check(filename):
                 self.value = filename
@@ -196,7 +197,7 @@ class FileDialog(gui.Dialog):
                 self.input_file.value = "WRONG FORMAT"
         else:           
             if formats[self.ext].loader != None:
-                if os.path.isfile(filename) and formats[self.ext].check(filename):
+                if op.isfile(filename) and formats[self.ext].check(filename):
                     self.value = filename
                     self.format = formats[self.selector.value]
                     self.send(gui.CHANGE)
@@ -229,9 +230,9 @@ class RulesDialog(ShowTextDialog):
     def __init__(self, title='Rules', width=400, height=200):
         ShowTextDialog.__init__(self, title, width, height)
         self.add_block(align=0, text="Rules of Clonium")
-        self.add_block(align=-1, text="* Click on clip and it will grow.")
-        self.add_block(align=-1, text="* When a clip grows more than 4 it explode on 4 free neighboring cells and its owner capture them.")
-        self.add_block(align=-1, text="* To win you should capture all clips.")
+        self.add_block(align=-1, text="* Click on yout checker and it will grow.")
+        self.add_block(align=-1, text="* When a checker grows more than 4 it explode on 4 free neighboring cells and its owner capture them.")
+        self.add_block(align=-1, text="* To win you should capture all checkers.")
         gui.Dialog.__init__(self, self.title, gui.ScrollArea(self.document, width, height))
 
 class NewGameDialog(gui.Dialog):
@@ -243,7 +244,7 @@ class NewGameDialog(gui.Dialog):
         init_td_style(self.table, style=td_style)
         self.table.tr()
         self.table.td(gui.Label("Map"), align=-1, style=td_style)
-        self.map_path = gui.Input(request("paths.map_folder"))
+        self.map_path = gui.Input(folder('map'))
         self.table.td(self.map_path, style=td_style)
         self.browse_button = gui.Button("Browse...")
         self.browse_button.connect(gui.CLICK, self.open_map)
@@ -261,8 +262,9 @@ class NewGameDialog(gui.Dialog):
         self.connect(gui.QUIT, self.send, gui.CHANGE)
 
     def open_map(self):
-        fd = FileDialog("Choose map", "Choose",
-            path=request("paths.map_folder"),
+        fd = FileDialog(
+            "Choose map", "Choose",
+            path=folder('map'),
             preview=Preview(display_players=False),
             exts=['map', 'preset', 'state']
             )

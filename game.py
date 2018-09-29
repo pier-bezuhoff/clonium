@@ -72,7 +72,7 @@ class Game(object):
         pygame.display.update()
 
     def start(self):
-        if request("core.autosave"):
+        if request("game.autosave"):
             self.save_preset()
             self.save()
         # pygame
@@ -115,7 +115,7 @@ class Game(object):
             else:
                 pos = self.player_choice(poss)
             self.news.add(pos)
-            if request("core.autosave"):
+            if request("game.autosave"):
                 self.history.append((self.player, pos))
                 self.save()
             self.board.increase_level(pos, player=self.player)
@@ -277,13 +277,13 @@ class Game(object):
         self.board = core.make_turns(self.initial_board, self.history)
         self.order = [player for player in self.initial_order if player in self.board.players]
         self.player = core.shift_player(self.history[-1][0], self.order, self.board) if self.history else self.order[0]
-        if request('core.autosave'):
+        if request('game.autosave'):
             self.save()
         self.draw()
 
     def quit(self):
         self.print_results()
-        if request('core.autosave'):
+        if request('game.autosave'):
             self.save()
         pygame.quit()
         sys_exit()

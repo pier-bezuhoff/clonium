@@ -1,12 +1,13 @@
 import pygame
+import os.path as op
 from sys import exit as sys_exit
 
 import pgu_gui as gui
 
 from widgets import FileDialog, Preview, ImageWidget, NewMapDialog, add_event_handler, enter_pressed
+from preference import request, folder
 import preference
 import core
-request = preference.request
 
 td_style = request("core.style")
 
@@ -17,24 +18,28 @@ class MapEditor(gui.Desktop):
     items = core.transformed_items(items, cell_size=request("map_editor.cell_size"))
     theme = gui.Theme(preference.theme())
 
-    def __init__(self, board=None, **params):
+    def __init__(self, board=None, callback=None, **params):
         pygame.display.set_mode((request("map_editor.width"), request("map_editor.height")))
         gui.Desktop.__init__(self, theme=self.theme, **params)
+        self.callback = callback or (lambda *_, **__: None)
         self.connect(gui.QUIT, self.quit)
         self.board = board
+        self.filename = None
         container = gui.Container(width=request("map_editor.width"), height=request("map_editor.height"))
 
         spacer = request("map_editor.space_size")
 
         self.new_dialog = NewMapDialog()
         self.new_dialog.connect(gui.CHANGE, self.action_new)
-        self.open_dialog = FileDialog("Choose map", "Choose",
-            path=request("paths.map_folder"),
+        self.open_dialog = FileDialog(
+            "Choose map", "Choose",
+            path=folder('map'),
             preview=Preview(display_players=False),
             exts=['map', 'preset', 'state'])
         self.open_dialog.connect(gui.CHANGE, self.new_map)
-        self.save_dialog = FileDialog("Enter filename to save with", "Choose",
-            path=request("paths.map_folder"),
+        self.save_dialog = FileDialog(
+            "Enter filename to save with", "Choose",
+            path=folder('map'),
             exts=['map'],
             save=True)
         self.save_dialog.connect(gui.CHANGE, self.action_saveas)
@@ -58,14 +63,14 @@ class MapEditor(gui.Desktop):
             ('Remove/Remove bottom row', self.remove_bottom_row, None),
             ('Remove/Remove left column', self.remove_left_column, None),
             ('Remove/Remove right column', self.remove_right_column, None),
-            ('Remove/Remove the same clips', self.remove_same_clips, None),
-            ('Remove/Remove clips with the same player', self.remove_same_player_clips, None),
-            ('Remove/Remove clips with the same amount', self.remove_same_amount_clips, None),
-            ('Remove/Remove all clips', self.remove_clips, None),
+            ('Remove/Remove the same checkers', self.remove_same_checkers, None),
+            ('Remove/Remove checkers with the same owner', self.remove_same_player_checkers, None),
+            ('Remove/Remove checkers with the same level', self.remove_same_level_checkers, None),
+            ('Remove/Remove all checkers', self.remove_checkers, None),
             ('Remove/Remove cells', self.remove_cells, None),
             ('Edit/Permute cells', self.permute_cells, None),
             ('Edit/Permute players', self.permute_players, None),
-            ('Edit/Permute clips', self.permute_clips, None)
+            ('Edit/Permute checkers', self.permute_checkers, None)
             # ('Help/Help', self.help_dialog.open)
             ])
         container.add(self.menus, 0, 0)
@@ -114,8 +119,8 @@ class MapEditor(gui.Desktop):
         add_event_handler(self.player_input, enter_pressed, lambda e: self.new_player())
         self.player_table.td(self.player_input, style=td_style)
         self.player_table.tr()
-        self.clip = ImageWidget(image=self.items[self.amount][self.player], width=request("map_editor.view_width"), height=request("map_editor.view_height"))
-        self.player_table.td(self.clip, style=td_style)
+        self.checker = ImageWidget(image=self.items[self.amount][self.player], width=request("map_editor.view_width"), height=request("map_editor.view_height"))
+        self.player_table.td(self.checker, style=td_style)
         self.player_table.tr()
         # self.color = gui.Color("#000000", width=mode.rect.w, height=mode.rect.w)
         # self.color.connect(gui.CLICK, self.choose_player)
@@ -171,19 +176,19 @@ class MapEditor(gui.Desktop):
         if self.painter.board is not None:
             self.painter.set_map(self.painter.board.remove_right_column())
 
-    def remove_same_clips(self, *pargs):
+    def remove_same_checkers(self, *pargs):
         if self.painter.board is not None:
             self.painter.set_map(self.painter.board.empty_cells(condition=lambda cell: cell == (self.player, self.amount)))
 
-    def remove_same_player_clips(self, *pargs):
+    def remove_same_player_checkers(self, *pargs):
         if self.painter.board is not None:
             self.painter.set_map(self.painter.board.empty_cells(condition=lambda cell: cell[0] == self.player))
 
-    def remove_same_amount_clips(self, *pargs):
+    def remove_same_level_checkers(self, *pargs):
         if self.painter.board is not None:
             self.painter.set_map(self.painter.board.empty_cells(condition=lambda cell: cell[1] == self.amount))
 
-    def remove_clips(self, *pargs):
+    def remove_checkers(self, *pargs):
         if self.painter.board is not None:
             self.painter.set_map(self.painter.board.empty_cells())
 
@@ -199,7 +204,7 @@ class MapEditor(gui.Desktop):
         if self.painter.board is not None:
             self.painter.set_map(self.painter.board.permute_players())
 
-    def permute_clips(self, *pargs):
+    def permute_checkers(self, *pargs):
         if self.painter.board is not None:
             self.painter.set_map(self.painter.board.permute_checkers())
 
@@ -243,7 +248,7 @@ class MapEditor(gui.Desktop):
         if player in range(len(self.items[1])):
             self.player = player
             self.player_input.value = str(self.player)
-            self.clip.new_image(self.items[self.amount][self.player])
+            self.checker.new_image(self.items[self.amount][self.player])
             if self.painter.board is not None:
                 self.set_brush()
         else:
@@ -252,7 +257,7 @@ class MapEditor(gui.Desktop):
     def new_amount(self):
         if self.selector.value in self.items.keys():
             self.amount = self.selector.value
-            self.clip.new_image(self.items[self.amount][self.player])
+            self.checker.new_image(self.items[self.amount][self.player])
             self.set_brush()
         else:
             print("WARNING: Wrong amount: {}, applicable amounts: {}".format(self.selector.value, list(self.items.keys())))
@@ -263,7 +268,7 @@ class MapEditor(gui.Desktop):
     def action_new(self):
         self.new_dialog.close()
         self.filename = self.new_dialog.filename
-        self.filename_input.value = self.filename.split('/')[-1]
+        self.filename_input.value = op.split(self.filename)[-1]
         board = self.new_dialog.value
         self.painter.set_map(board)
         self.set_brush()
@@ -274,9 +279,11 @@ class MapEditor(gui.Desktop):
         else:
             print("WARNING: Nothing done, nothing to save")
 
-    def quit(self, *pargs):
-        # ask save
+    def quit(self, *_, **__):
+        gui.Desktop.quit(self)
+        # BUG with closing: doesn't resize
         sys_exit()
+        # self.callback(board=self.board, filename=self.filename)
 
     def save_as(self, *pargs):
         if self.painter.board is not None:
@@ -288,18 +295,19 @@ class MapEditor(gui.Desktop):
     def action_saveas(self):
         self.save_dialog.close()
         self.filename = self.save_dialog.value
-        self.filename_input.value = self.filename.split('/')[-1]
+        self.filename_input.value = op.split(self.filename)[-1]
         core.save_map(self.painter.board, self.filename, full=True)
 
     def new_map(self):
         self.open_dialog.close()
         self.filename = self.open_dialog.value
-        loader = self.open_dialog.format.loader
+        loader = self.open_dialog.format.map_loader
         self.painter.set_map(board=loader(self.filename))
         self.set_brush()
-        name, ext = self.filename.rsplit('.', 1)
-        self.filename = request("map_editor.autosave_pattern").format(name=name, ext=ext)
-        self.filename_input.value = self.filename.split('/')[-1]
+        name, ext = op.splitext(self.filename)
+        self.filename = request("map_editor.autosave_pattern").format(
+            name=name, ext=request("formats.map.extension"))
+        self.filename_input.value = op.split(self.filename)[-1]
 
 
 class Painter(gui.Widget):
