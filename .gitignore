@@ -1,6 +1,5 @@
 *.pyc
 *.*~
-*.spec
 *.pkl
 *.emacs*
 __pycache__
